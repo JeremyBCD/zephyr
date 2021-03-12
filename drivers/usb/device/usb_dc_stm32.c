@@ -289,6 +289,21 @@ static int usb_dc_stm32_clock_enable(void)
 		return -EIO;
 	}
 
+#ifdef CONFIG_SOC_SERIES_STM32H7X
+	/** Initialize the USB peripheral clock */
+	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
+    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+		LOG_ERR("HAL_RCCEx_PeriphCLKConfig failed!");
+    }
+
+	/* Enable the USB voltage detector */
+	SET_BIT (PWR->CR3, PWR_CR3_USB33DEN);
+	__HAL_RCC_USB2_OTG_FS_CLK_ENABLE();
+#endif
+
 #if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_otghs)
 #if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_usbphyc)
 	LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_OTGHSULPI);

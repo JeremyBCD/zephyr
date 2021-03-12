@@ -638,13 +638,13 @@
 			};
 		};
 
-		usbotg_fs: usb@40080000 {
+		usbotg_fs: otgfs@40080000 {
 			compatible = "st,stm32-otgfs";
 			reg = <0x40080000 0x40000>;
 			interrupts = <101 0>;
 			interrupt-names = "otgfs";
-			num-bidir-endpoints = <6>;
-			ram-size = <1280>;
+			num-bidir-endpoints = <9>;
+			ram-size = <4096>;
 			maximum-speed = "full-speed";
 			phys = <&otgfs_phy>;
 			clocks = <&rcc STM32_CLOCK_BUS_AHB2 0x00000080>;
@@ -770,6 +770,18 @@
 			label = "BACKUP_SRAM";
 			status = "disabled";
 		};
+	};
+
+	otghs_fs_phy: otghs_fs_phy {
+		compatible = "usb-nop-xceiv";
+		#phy-cells = <0>;
+		label = "OTGHS_FS_PHY";
+	};
+
+	otgfs_phy: otgfs_phy {
+		compatible = "usb-nop-xceiv";
+		#phy-cells = <0>;
+		label = "OTGFS_PHY";
 	};
 };
 
