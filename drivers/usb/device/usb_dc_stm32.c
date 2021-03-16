@@ -192,13 +192,15 @@ static int usb_dc_stm32_clock_enable(void)
 	};
 
 	/*
-	 * Some SoCs in STM32F0/L0/L4 series disable USB clock by
+	 * Some SoCs in STM32F0/L0/L4/H7 series disable USB clock by
 	 * default.  We force USB clock source to MSI or PLL clock for this
 	 * SoCs.  However, if these parts have an HSI48 clock, use
 	 * that instead.  Example reference manual RM0360 for
 	 * STM32F030x4/x6/x8/xC and STM32F070x6/xB.
 	 */
-#if defined(RCC_HSI48_SUPPORT) || defined(CONFIG_SOC_SERIES_STM32WBX)
+#if defined(RCC_HSI48_SUPPORT) || \
+	defined(CONFIG_SOC_SERIES_STM32WBX) || \
+	defined(CONFIG_SOC_SERIES_STM32H7X)
 
 	/*
 	 * In STM32L0 series, HSI48 requires VREFINT and its buffer
@@ -289,21 +291,6 @@ static int usb_dc_stm32_clock_enable(void)
 		return -EIO;
 	}
 
-#ifdef CONFIG_SOC_SERIES_STM32H7X
-	/** Initialize the USB peripheral clock */
-	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
-    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-    {
-		LOG_ERR("HAL_RCCEx_PeriphCLKConfig failed!");
-    }
-
-	/* Enable the USB voltage detector */
-	SET_BIT (PWR->CR3, PWR_CR3_USB33DEN);
-	__HAL_RCC_USB2_OTG_FS_CLK_ENABLE();
-#endif
-
 #if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_otghs)
 #if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_usbphyc)
 	LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_OTGHSULPI);
@@ -390,6 +377,13 @@ static int usb_dc_stm32_init(void)
 	usb_dc_stm32_state.pcd.Init.Sof_enable = 1;
 #endif /* CONFIG_USB_DEVICE_SOF */
 
+#if defined(CONFIG_SOC_SERIES_STM32H7X)
+	/* Need to disable the ULPI clock on USB2 and enable the FS clock. Need to
+	 * make this dependent on HS or FS config. */
+	__HAL_RCC_USB2_OTG_FS_ULPI_CLK_DISABLE();
+	__HAL_RCC_USB2_OTG_FS_CLK_ENABLE();
+#endif
+
 	LOG_DBG("Pinctrl signals configuration");
 	status = stm32_dt_pinctrl_configure(usb_pinctrl,
 				     ARRAY_SIZE(usb_pinctrl),
@@ -434,6 +428,11 @@ static int usb_dc_stm32_init(void)
 		k_sem_init(&usb_dc_stm32_state.in_ep_state[i].write_sem, 1, 1);
 	}
 #endif /* USB */
+
+#if defined(CONFIG_SOC_SERIES_STM32H7X)
+	/* Equivalent to calling HAL_PWREx_EnableUSBVoltageDetector() */
+	SET_BIT (PWR->CR3, PWR_CR3_USB33DEN);
+#endif
 
 	IRQ_CONNECT(USB_IRQ, USB_IRQ_PRI,
 		    usb_dc_stm32_isr, 0, 0);
