@@ -1083,9 +1083,15 @@
 #else /* CONFIG_CAN_STM32FD_LITE */
 
 /* Rx FIFO 0 Fill Level */
+#if defined(CONFIG_SOC_SERIES_STM32H7X)
+#define CAN_MCAN_RXF0S_F0FL_POS      (0U)
+#define CAN_MCAN_RXF0S_F0FL_MSK      (0x7FUL << CAN_MCAN_RXF0S_F0FL_POS)
+#define CAN_MCAN_RXF0S_F0FL          CAN_MCAN_RXF0S_F0FL_MSK     
+#else
 #define CAN_MCAN_RXF0S_F0FL_POS      (0U)
 #define CAN_MCAN_RXF0S_F0FL_MSK      (0x3FUL << CAN_MCAN_RXF0S_F0FL_POS)
 #define CAN_MCAN_RXF0S_F0FL          CAN_MCAN_RXF0S_F0FL_MSK
+#endif
 /* Rx FIFO 0 Get Index */
 #define CAN_MCAN_RXF0S_F0GI_POS      (8U)
 #define CAN_MCAN_RXF0S_F0GI_MSK      (0x3FUL << CAN_MCAN_RXF0S_F0GI_POS)
@@ -1381,7 +1387,11 @@
 
 /***************  Bit definition for CAN_MCAN_TXEFC register  *****************/
 /* Event FIFO Watermark */
+#if defined(CONFIG_SOC_SERIES_STM32H7X)
+#define CAN_MCAN_TXEFC_EFSA_POS      (2U)
+#else
 #define CAN_MCAN_TXEFC_EFSA_POS      (0U)
+#endif
 #define CAN_MCAN_TXEFC_EFSA_MSK      (0x3FFFUL << CAN_MCAN_TXEFC_EFSA_POS)
 #define CAN_MCAN_TXEFC_EFSA          CAN_MCAN_TXEFC_EFSA_MSK
 /* Event FIFO Size */
