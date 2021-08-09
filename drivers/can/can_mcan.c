@@ -252,7 +252,7 @@ int can_mcan_init(const struct device *dev, const struct can_mcan_config *cfg,
 		(can->crel & CAN_MCAN_CREL_MON) >> CAN_MCAN_CREL_MON_POS,
 		(can->crel & CAN_MCAN_CREL_DAY) >> CAN_MCAN_CREL_DAY_POS);
 
-#ifndef CONFIG_CAN_STM32FD
+#ifndef CONFIG_CAN_STM32_MCAN_LITE
 	can->sidfc = ((uint32_t)msg_ram->std_filt & CAN_MCAN_SIDFC_FLSSA_MSK) |
 		     (ARRAY_SIZE(msg_ram->std_filt) << CAN_MCAN_SIDFC_LSS_POS);
 	can->xidfc = ((uint32_t)msg_ram->ext_filt & CAN_MCAN_XIDFC_FLESA_MSK) |
@@ -305,7 +305,7 @@ int can_mcan_init(const struct device *dev, const struct can_mcan_config *cfg,
 
 #endif
 
-#ifdef CONFIG_CAN_STM32FD
+#ifdef CONFIG_CAN_STM32_MCAN_LITE
 	can->rxgfc |= (CONFIG_CAN_MAX_STD_ID_FILTER << CAN_MCAN_RXGFC_LSS_POS) |
 		      (CONFIG_CAN_MAX_EXT_ID_FILTER << CAN_MCAN_RXGFC_LSE_POS) |
 		      (0x2 << CAN_MCAN_RXGFC_ANFS_POS) |
@@ -313,7 +313,7 @@ int can_mcan_init(const struct device *dev, const struct can_mcan_config *cfg,
 #else
 	can->gfc |= (0x2 << CAN_MCAN_GFC_ANFE_POS) |
 		    (0x2 << CAN_MCAN_GFC_ANFS_POS);
-#endif /* CONFIG_CAN_STM32FD */
+#endif /* CONFIG_CAN_STM32_MCAN_LITE */
 
 	if (cfg->sample_point) {
 		ret = can_calc_timing(dev, &timing, cfg->bus_speed,
@@ -322,8 +322,8 @@ int can_mcan_init(const struct device *dev, const struct can_mcan_config *cfg,
 			LOG_ERR("Can't find timing for given param");
 			return -EIO;
 		}
-		LOG_DBG("Presc: %d, TS1: %d, TS2: %d",
-			timing.prescaler, timing.phase_seg1, timing.phase_seg2);
+		LOG_DBG("cfg->bus_speed: %d, Presc: %d, TS1: %d, TS2: %d",
+			cfg->bus_speed, timing.prescaler, timing.phase_seg1, timing.phase_seg2);
 		LOG_DBG("Sample-point err : %d", ret);
 	} else if (cfg->prop_ts1) {
 		timing.prop_seg = 0;
@@ -370,7 +370,7 @@ int can_mcan_init(const struct device *dev, const struct can_mcan_config *cfg,
 		  CAN_MCAN_IE_RF0N | CAN_MCAN_IE_RF1N | CAN_MCAN_IE_RF0L |
 		  CAN_MCAN_IE_RF1L;
 
-#ifdef CONFIG_CAN_STM32FD
+#ifdef CONFIG_CAN_STM32_MCAN_LITE
 	can->ils = CAN_MCAN_ILS_RXFIFO0 | CAN_MCAN_ILS_RXFIFO1;
 #else
 	can->ils = CAN_MCAN_ILS_RF0N | CAN_MCAN_ILS_RF1N;

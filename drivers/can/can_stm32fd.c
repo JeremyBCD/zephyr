@@ -35,15 +35,28 @@ int can_stm32fd_get_core_clock(const struct device *dev, uint32_t *rate)
 
 	*rate = rate_tmp / CONFIG_CAN_STM32_CLOCK_DIVISOR;
 
+	LOG_DBG("%s: rate=%d", __func__, *rate);
+
 	return 0;
 }
 
 void can_stm32fd_clock_enable(void)
 {
+#if defined(CONFIG_SOC_SERIES_STM32H7X)
+	LL_RCC_SetFDCANClockSource(LL_RCC_FDCAN_CLKSOURCE_PLL1Q);
+	__HAL_RCC_FDCAN_CLK_ENABLE();
+
+	if (!LL_RCC_PLL1Q_IsEnabled()) {
+		LOG_ERR("PLL1Q clock must be enabled!");
+		return;
+	}
+
+#else  /* CONFIG_SOC_SERIES_STM32H7X */
 	LL_RCC_SetFDCANClockSource(LL_RCC_FDCAN_CLKSOURCE_PCLK1);
 	__HAL_RCC_FDCAN_CLK_ENABLE();
 
 	FDCAN_CONFIG->CKDIV = CONFIG_CAN_STM32_CLOCK_DIVISOR >> 1;
+#endif  /* CONFIG_SOC_SERIES_STM32H7X */
 }
 
 void can_stm32fd_register_state_change_isr(const struct device *dev,

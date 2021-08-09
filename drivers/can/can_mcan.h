@@ -18,7 +18,7 @@
 #define NUM_TX_BUF_ELEMENTS     DT_PROP(DT_PATH(soc, can), tx_buffer_elements)
 
 
-#ifdef CONFIG_CAN_STM32FD
+#ifdef CONFIG_CAN_STM32_MCAN_LITE
 #define NUM_STD_FILTER_DATA CONFIG_CAN_MAX_STD_ID_FILTER
 #define NUM_EXT_FILTER_DATA CONFIG_CAN_MAX_EXT_ID_FILTER
 #else
@@ -151,7 +151,7 @@ struct can_mcan_msg_sram {
 	volatile struct can_mcan_rx_fifo rx_fifo0[NUM_RX_FIFO0_ELEMENTS];
 	volatile struct can_mcan_rx_fifo rx_fifo1[NUM_RX_FIFO1_ELEMENTS];
 	volatile struct can_mcan_rx_fifo rx_buffer[NUM_RX_BUF_ELEMENTS];
-	volatile struct can_mcan_tx_event_fifo tx_event_fifo[NUM_TX_BUF_ELEMENTS];
+	volatile struct can_mcan_tx_event_fifo tx_event_fifo[NUM_TX_EVENT_FIFO_ELEMENTS];
 	volatile struct can_mcan_tx_buffer tx_buffer[NUM_TX_BUF_ELEMENTS];
 } __packed;
 
