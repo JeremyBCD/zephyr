@@ -14,8 +14,8 @@
 #define PWM_CHANNEL PWM_PIN
 #define PWM_PIN       20
 
-#define NOTE_DURATION_MS 100
-#define REPEAT_DELAY_MS  500
+#define NOTE_DURATION_MS 50
+#define REPEAT_DELAY_MS  100
 
 static struct k_work_delayable pwm_work;
 
