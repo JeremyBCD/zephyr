@@ -105,12 +105,18 @@ static int can_enter_init_mode(struct can_mcan_reg  *can, k_timeout_t timeout)
 static int can_leave_init_mode(struct can_mcan_reg  *can, k_timeout_t timeout)
 {
 	int64_t start_time;
+	int i = 0;
+
+	LOG_DBG("%d: can->cccr: %d", i++, can->cccr);
 
 	can->cccr &= ~CAN_MCAN_CCCR_INIT;
 	start_time = k_uptime_ticks();
+	LOG_DBG("%d: can->cccr: %d", i++, can->cccr);
 
 	while ((can->cccr & CAN_MCAN_CCCR_INIT) != 0U) {
+		can->cccr &= ~CAN_MCAN_CCCR_INIT;
 		if (k_uptime_ticks() - start_time > timeout.ticks) {
+			LOG_DBG("%d: can->cccr: %d", i++, can->cccr);
 			return -EAGAIN;
 		}
 	}
@@ -278,11 +284,14 @@ int can_mcan_init(const struct device *dev, const struct can_mcan_config *cfg,
 		return -EIO;
 	}
 
+	LOG_DBG("initial can->cccr: %d", can->cccr);
+
 	ret = can_enter_init_mode(can, K_MSEC(CAN_INIT_TIMEOUT));
 	if (ret) {
 		LOG_ERR("Failed to enter init mode");
 		return -EIO;
 	}
+	LOG_DBG("after can_enter_init_mode, can->cccr: %d", can->cccr);
 
 	/* Configuration Change Enable */
 	can->cccr |= CAN_MCAN_CCCR_CCE;
