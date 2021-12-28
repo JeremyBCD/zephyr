@@ -20,7 +20,7 @@
 #define COUNTER_MSG_ID 0x12345
 #define SET_LED 1
 #define RESET_LED 0
-#define SLEEP_TIME K_MSEC(250)
+#define SLEEP_TIME K_MSEC(1000)
 
 K_THREAD_STACK_DEFINE(rx_thread_stack, RX_THREAD_STACK_SIZE);
 K_THREAD_STACK_DEFINE(poll_state_stack, STATE_POLL_THREAD_STACK_SIZE);
@@ -262,18 +262,21 @@ void main(void)
 	printk("Finished init.\n");
 
 	while (1) {
-		change_led_frame.data[0] = toggle++ & 0x01 ? SET_LED : RESET_LED;
-		/* This sending call is none blocking. */
-		can_send(can_dev, &change_led_frame, K_FOREVER,
+		change_led_frame.data[0] = counter++;
+
+		ret = can_send(can_dev, &change_led_frame, K_FOREVER,
 			 tx_irq_callback,
 			 "LED change");
+		printk("Sent frame %d, ret=%d\n", counter, ret);
+
 		k_sleep(SLEEP_TIME);
 
-		UNALIGNED_PUT(sys_cpu_to_be16(counter),
-			      (uint16_t *)&counter_frame.data[0]);
-		counter++;
-		/* This sending call is blocking until the message is sent. */
-		can_send(can_dev, &counter_frame, K_MSEC(100), NULL, NULL);
-		k_sleep(SLEEP_TIME);
+		// UNALIGNED_PUT(sys_cpu_to_be16(counter),
+		// 	      (uint16_t *)&counter_frame.data[0]);
+		// counter++;
+		// // /* This sending call is blocking until the message is sent. */
+		// // ret = can_send(can_dev, &counter_frame, K_MSEC(100), NULL, NULL);
+		// // printk("can_send() ret=%d\n", ret);
+		// k_sleep(SLEEP_TIME);
 	}
 }
