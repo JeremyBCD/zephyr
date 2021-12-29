@@ -35,6 +35,8 @@ int can_stm32fd_get_core_clock(const struct device *dev, uint32_t *rate)
 
 	*rate = rate_tmp / CONFIG_CAN_STM32_CLOCK_DIVISOR;
 
+	LOG_DBG("%s: rate=%d", __func__, *rate);
+
 	return 0;
 }
 
